@@ -30,6 +30,128 @@ char* unwanted_json_error() {
   return unwanted_json_error_message;
 }
 
+void unwanted_json_tokens_cleanup(unwanted_json_tokens* tokens) {
+  size_t i;
+
+  if (tokens != NULL) {
+    for (i = 0; i < tokens->size; i++) {
+      free(tokens->values[i].value);
+    }
+
+    free(tokens->values);
+
+    free(tokens);
+  }
+}
+
+void unwanted_json_print_tokens(unwanted_json_tokens* tokens) {
+  size_t i;
+
+  printf("%d tokens\n", tokens->size);
+
+  for (i = 0; i < tokens->size; i++) {
+    printf("%d) Type(%d) - %s\n", i, tokens->values[i].type, tokens->values[i].value);
+  }
+}
+
+unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
+
+  size_t json_string_size = 0;
+
+  size_t json_string_index = 0;
+
+  unwanted_json_tokens* tokens = NULL;
+
+
+  json_string_size = strlen(json_string);
+
+  tokens = malloc(sizeof(*tokens));
+
+  if (tokens == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens";
+
+    return NULL;
+  }
+
+  tokens->size = 0;
+  tokens->values = malloc(sizeof(*tokens->values));
+
+  if (tokens->values == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens values";
+
+    free(tokens);
+
+    return NULL;
+  }
+
+
+  while (json_string_index < json_string_size) {
+    char json_char = json_string[json_string_index];
+
+    if (json_char == '{' || json_char == '}' || json_char == '[' || json_char == ']' || json_char == ':' || json_char == ',') {
+      if (tokens->size > 0) {
+        tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+  
+          free(tokens);
+
+          return NULL;
+        }
+      }
+      
+      switch (json_char) {
+        case '{':
+          tokens->values[tokens->size].type = Token_BraceOpen;
+        break;
+
+        case '}':
+          tokens->values[tokens->size].type = Token_BraceClose;
+        break;
+
+        case '[':
+          tokens->values[tokens->size].type = Token_BracketOpen;
+        break;
+
+        case ']':
+          tokens->values[tokens->size].type = Token_BracketClose;
+        break;
+
+        case ':':
+          tokens->values[tokens->size].type = Token_Colon;
+        break;
+        
+        case ',':
+          tokens->values[tokens->size].type = Token_Comma;
+        break;
+      }
+
+      tokens->values[tokens->size].value = malloc(2 * sizeof(*tokens->values[tokens->size].value));
+      
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to allocate memory for one of unwanted_json_tokens values value";
+        
+        unwanted_json_tokens_cleanup(tokens);
+        
+        return NULL;
+      }
+      
+      tokens->values[tokens->size].value[0] = json_char;
+      tokens->values[tokens->size].value[1] = '\0';
+
+      tokens->size++;
+
+      json_string_index++;
+    } else {
+      json_string_index++;
+    }
+  }
+
+  return tokens;
+}
+
+
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   char line[FILE_LINE_BUFFER];
 
@@ -39,7 +161,7 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
 
   size_t file_lines_size = 0;
 
-  unwanted_json_tokens* token = NULL;
+  unwanted_json_tokens* tokens = NULL;
 
 
   file_lines = malloc((FILE_LINE_BUFFER + 2) * sizeof(*file_lines));
@@ -74,30 +196,12 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   }
 
   printf("File content: %s\n", file_lines);
-  printf("File char count: %d\n", file_lines_size);
+  printf("File char count: %d\n\n\n", file_lines_size);
+
+  
+  tokens = unwanted_json_tokenize(file_lines);
 
   free(file_lines);
 
-  // token = malloc(sizeof(*token));
-
-  // if (token == NULL) {
-  //   unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens";
-
-  //   return NULL;
-  // }
-
-  // token->size = 0;
-  // token->values = malloc(sizeof(*token->values));
-
-  // if (token->values == NULL) {
-  //   unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens items";
-
-  //   free(token);
-
-  //   return NULL;
-  // }
-
-
-
-  return token;
+  return tokens;
 }

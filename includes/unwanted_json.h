@@ -37,6 +37,12 @@ typedef struct unwanted_json_tokens unwanted_json_tokens;
 
 char* unwanted_json_error();
 
+void unwanted_json_tokens_cleanup(unwanted_json_tokens* tokens);
+
+void unwanted_json_print_tokens(unwanted_json_tokens* tokens);
+
+unwanted_json_tokens* unwanted_json_tokenize(char* json_string);
+
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file);
 
 #endif

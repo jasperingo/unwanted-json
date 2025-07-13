@@ -1,1 +1,5 @@
-{"name":"Paul"}
+{
+  "name":"Paul",
+  "age": 29,
+  "pets": ["Dog", "Cat"]
+}
