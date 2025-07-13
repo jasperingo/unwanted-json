@@ -62,6 +62,10 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
 
   unwanted_json_tokens* tokens = NULL;
 
+  char* string_token_value = NULL;
+
+  size_t string_token_value_size = 0;
+
 
   json_string_size = strlen(json_string);
 
@@ -139,6 +143,65 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
       
       tokens->values[tokens->size].value[0] = json_char;
       tokens->values[tokens->size].value[1] = '\0';
+
+      tokens->size++;
+
+      json_string_index++;
+
+    } else if (json_char == '"') {
+
+      string_token_value_size = 0;
+
+      string_token_value = malloc(2 * sizeof(*string_token_value));
+
+      if (string_token_value == NULL) {
+        unwanted_json_error_message = "Failed to allocate memory for one of unwanted_json_tokens values string value";
+
+        unwanted_json_tokens_cleanup(tokens);
+        
+        return NULL;
+      }
+
+      json_char = json_string[++json_string_index];
+
+      while (json_char != '"') {
+        if (string_token_value_size > 0) {
+          string_token_value = realloc(string_token_value, (string_token_value_size + 2) * sizeof(*string_token_value));
+
+          if (tokens->values == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+    
+            unwanted_json_tokens_cleanup(tokens);
+
+            return NULL;
+          }
+        }
+
+        string_token_value[string_token_value_size] = json_char;
+        string_token_value[string_token_value_size + 1] = '\0';
+
+        string_token_value_size++;
+
+        json_char = json_string[++json_string_index];
+      }
+
+
+      if (tokens->size > 0) {
+        tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+  
+          free(tokens);
+
+          return NULL;
+        }
+      }
+
+
+      tokens->values[tokens->size].type = Token_String;
+
+      tokens->values[tokens->size].value = string_token_value;
 
       tokens->size++;
 
