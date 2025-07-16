@@ -9,7 +9,7 @@ int main(int argc, char** args) {
   if (tokens != NULL) {
     unwanted_json_print_tokens(tokens);
 
-    unwanted_json_tokens_cleanup(tokens);
+    unwanted_json_cleanup_tokens(tokens);
   } else {
     printf("Error parsing JSON file: %s", unwanted_json_error());
   }

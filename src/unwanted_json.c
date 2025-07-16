@@ -3,6 +3,7 @@
 #define FILE_LINE_BUFFER 5
 
 struct unwanted_json_node {
+  size_t level;
   unwanted_json_node_type type;
   char* string_value;
   bool boolean_value;
@@ -30,7 +31,7 @@ char* unwanted_json_error() {
   return unwanted_json_error_message;
 }
 
-void unwanted_json_tokens_cleanup(unwanted_json_tokens* tokens) {
+void unwanted_json_cleanup_tokens(unwanted_json_tokens* tokens) {
   size_t i;
 
   if (tokens != NULL) {
@@ -480,4 +481,84 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   free(file_lines);
 
   return tokens;
+}
+
+void unwanted_json_cleanup_node(unwanted_json_node* node) {
+  size_t i;
+
+  if (node != NULL) {
+    switch (node->type) {
+      case Node_String:
+        free(node->string_value);
+      break;
+
+      case Node_Array:
+       for (i = 0; i < node->array_value_size; i++) {
+          unwanted_json_cleanup_node(&node->array_value[i]);
+        }
+
+        free(node->array_value);
+      break;
+      
+      case Node_Object:
+        for (i = 0; i < node->object_value_size; i++) {
+          unwanted_json_cleanup_node(&node->object_value[i]);
+        }
+
+        free(node->object_value_key);
+        free(node->object_value);
+      break;
+      
+      default:
+        break;
+    }
+  }
+}
+
+void unwanted_json_cleanup_nodes(unwanted_json_node* node) {
+  if (node != NULL && node->level == 0) {
+    unwanted_json_cleanup_node(node);
+
+    free(node);
+  }
+}
+
+unwanted_json_node* unwanted_json_parse_value(unwanted_json_tokens* tokens, size_t* tokens_index) {
+  unwanted_json_token token = tokens->values[*tokens_index];
+
+  switch (token.type) {
+    case Token_String:
+        return token.value;
+    case Token_Number:
+        // return Number(token.value);
+    case Token_True:
+        return true;
+    case Token_False:
+        return false;
+    case Token_Null:
+        // return null;
+    case Token_BraceOpen:
+        // return parseObject();
+    case Token_BracketOpen:
+        // return parseArray();
+    default:
+      unwanted_json_error_message = "Invalid JSON tokens passed to parser";
+
+      return NULL;
+  }
+}
+
+unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens) {
+  size_t tokens_index = 0;
+
+  unwanted_json_node* node = NULL;
+
+  if (tokens == NULL || tokens->size == 0) {
+    unwanted_json_error_message = "Invalid JSON tokens passed to parser";
+
+    return NULL;
+  }
+
+
+  return NULL;
 }
