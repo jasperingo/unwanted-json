@@ -59,8 +59,16 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
   size_t json_string_size = 0;
 
   size_t json_string_index = 0;
-
+  
   unwanted_json_tokens* tokens = NULL;
+
+  size_t number_minus_token_count = 0;
+
+  size_t number_plus_token_count = 0;
+  
+  size_t number_exponent_token_count = 0;
+
+  size_t number_period_token_count = 0;
 
   char* string_token_value = NULL;
 
@@ -275,7 +283,7 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
 
         tokens->size++;
       } else {
-        unwanted_json_error_message = "Invalid token provided";
+        unwanted_json_error_message = "Invalid JSON token provided";
 
         unwanted_json_tokens_cleanup(tokens);
 
@@ -284,8 +292,135 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
         return NULL;
       }
 
-    } else {
+    } else if (json_char == '-' || isdigit(json_char) > 0) {
+
+      number_minus_token_count = 0;
+
+      number_plus_token_count = 0;
+
+      number_exponent_token_count = 0;
+
+      number_period_token_count = 0;
+
+      string_token_value_size = 0;
+
+      string_token_value = malloc(2 * sizeof(*string_token_value));
+
+      if (string_token_value == NULL) {
+        unwanted_json_error_message = "Failed to allocate memory for one of unwanted_json_tokens values string value";
+
+        unwanted_json_tokens_cleanup(tokens);
+        
+        return NULL;
+      }
+
+      while (json_char == '-' || json_char == '+' || json_char == 'e' || json_char == '.' || isdigit(json_char) > 0) {
+        switch (json_char) {
+          case '-':
+            if (number_minus_token_count >= 2) {
+              unwanted_json_error_message = "Invalid JSON number token provided";
+
+              unwanted_json_tokens_cleanup(tokens);
+
+              free(string_token_value);
+
+              return NULL;
+            } else {
+              number_minus_token_count++;
+            }
+          break;
+          
+          case '+':
+            if (number_plus_token_count >= 1) {
+              unwanted_json_error_message = "Invalid JSON number token provided";
+
+              unwanted_json_tokens_cleanup(tokens);
+
+              free(string_token_value);
+
+              return NULL;
+            } else {
+              number_plus_token_count++;
+            }
+          break;
+
+          case 'e':
+            if (number_exponent_token_count >= 1) {
+              unwanted_json_error_message = "Invalid JSON number token provided";
+
+              unwanted_json_tokens_cleanup(tokens);
+
+              free(string_token_value);
+
+              return NULL;
+            } else {
+              number_exponent_token_count++;
+            }
+          break;
+
+          case '.':
+            if (number_period_token_count >= 1) {
+              unwanted_json_error_message = "Invalid JSON number token provided";
+
+              unwanted_json_tokens_cleanup(tokens);
+
+              free(string_token_value);
+
+              return NULL;
+            } else {
+              number_period_token_count++;
+            }
+          break;
+        }
+
+        if (string_token_value_size > 0) {
+          string_token_value = realloc(string_token_value, (string_token_value_size + 2) * sizeof(*string_token_value));
+
+          if (string_token_value == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values string value";
+    
+            unwanted_json_tokens_cleanup(tokens);
+
+            return NULL;
+          }
+        }
+
+        string_token_value[string_token_value_size] = json_char;
+        string_token_value[string_token_value_size + 1] = '\0';
+
+        string_token_value_size++;
+
+        json_char = json_string[++json_string_index];
+      }
+
+
+      if (tokens->size > 0) {
+        tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+  
+          free(tokens);
+
+          return NULL;
+        }
+      }
+
+
+      tokens->values[tokens->size].type = Token_Number;
+
+      tokens->values[tokens->size].value = string_token_value;
+
+      tokens->size++;
+
+    } else if (isspace(json_char) > 0) {
       json_string_index++;
+    } else {
+      unwanted_json_error_message = "Invalid JSON token provided";
+
+      unwanted_json_tokens_cleanup(tokens);
+
+      return NULL;
     }
   }
 
