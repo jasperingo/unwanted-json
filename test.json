@@ -1,5 +1,12 @@
 {
   "name":"Paul",
   "age": 29,
-  "pets": ["Dog", "Cat"]
+  "pets": ["Dog", "Cat"],
+  "weight": 79.234,
+  "married": false,
+  "car": null,
+  "address": {
+    "state": "Rivers",
+    "country": "Nigeria"
+  }
 }

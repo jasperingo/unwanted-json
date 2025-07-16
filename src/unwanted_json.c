@@ -168,8 +168,8 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
         if (string_token_value_size > 0) {
           string_token_value = realloc(string_token_value, (string_token_value_size + 2) * sizeof(*string_token_value));
 
-          if (tokens->values == NULL) {
-            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+          if (string_token_value == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values string value";
     
             unwanted_json_tokens_cleanup(tokens);
 
@@ -206,6 +206,84 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
       tokens->size++;
 
       json_string_index++;
+
+    } else if (isalpha(json_char) > 0) {
+
+      string_token_value_size = 0;
+
+      string_token_value = malloc(2 * sizeof(*string_token_value));
+
+      if (string_token_value == NULL) {
+        unwanted_json_error_message = "Failed to allocate memory for one of unwanted_json_tokens values string value";
+
+        unwanted_json_tokens_cleanup(tokens);
+        
+        return NULL;
+      }
+
+      while (isalpha(json_char) > 0) {
+        if (string_token_value_size > 0) {
+          string_token_value = realloc(string_token_value, (string_token_value_size + 2) * sizeof(*string_token_value));
+
+          if (string_token_value == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values string value";
+    
+            unwanted_json_tokens_cleanup(tokens);
+
+            return NULL;
+          }
+        }
+
+        string_token_value[string_token_value_size] = json_char;
+        string_token_value[string_token_value_size + 1] = '\0';
+
+        string_token_value_size++;
+
+        json_char = json_string[++json_string_index];
+      }
+
+
+      if (tokens->size > 0) {
+        tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+  
+          free(tokens);
+
+          return NULL;
+        }
+      }
+
+
+      if (strcmp(string_token_value, "true") == 0) {
+        tokens->values[tokens->size].type = Token_True;
+
+        tokens->values[tokens->size].value = string_token_value;
+
+        tokens->size++;
+      } else if (strcmp(string_token_value, "false") == 0) {
+        tokens->values[tokens->size].type = Token_False;
+
+        tokens->values[tokens->size].value = string_token_value;
+
+        tokens->size++;
+      } else if (strcmp(string_token_value, "null") == 0) {
+        tokens->values[tokens->size].type = Token_Null;
+
+        tokens->values[tokens->size].value = string_token_value;
+
+        tokens->size++;
+      } else {
+        unwanted_json_error_message = "Invalid token provided";
+
+        unwanted_json_tokens_cleanup(tokens);
+
+        free(string_token_value);
+
+        return NULL;
+      }
+
     } else {
       json_string_index++;
     }

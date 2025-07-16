@@ -6,10 +6,13 @@ int main(int argc, char** args) {
 
   unwanted_json_tokens* tokens = unwanted_json_file_tokenize(file);
 
-  unwanted_json_print_tokens(tokens);
+  if (tokens != NULL) {
+    unwanted_json_print_tokens(tokens);
 
-  unwanted_json_tokens_cleanup(tokens);
-
+    unwanted_json_tokens_cleanup(tokens);
+  } else {
+    printf("Error parsing JSON file: %s", unwanted_json_error());
+  }
 
   fclose(file);
 
