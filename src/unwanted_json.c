@@ -753,3 +753,319 @@ unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens) {
 
   return node;
 }
+
+unwanted_json_node* unwanted_json_get_node_by_key(unwanted_json_node* node, char* key) {
+  size_t i;
+
+  if (node == NULL || node->type != Node_Object) {
+    unwanted_json_error_message = "Provided unwanted_json_node is not an object";
+
+    return NULL;
+  }
+
+  for (i = 0; i < node->object_value_size; i++) {
+    if (strcmp(node->object_value[i].object_value_key, key) == 0) {
+      return &node->object_value[i];
+    }
+  }
+
+  unwanted_json_error_message = "Node with provided key not in provided unwanted_json_node";
+
+  return NULL;
+}
+
+char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key) {
+  char* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_String) {
+    unwanted_json_error_message = "Node with provided key is not an unwanted_json_node string";
+
+    return NULL;
+  }
+
+  result = strdup(result_node->string_value);
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided string unwanted_json_node";
+  }
+
+  return result;
+}
+
+double* unwanted_json_get_number_by_key(unwanted_json_node* node, char* key) {
+  double* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Number) {
+    unwanted_json_error_message = "Node with provided key is not an unwanted_json_node number";
+
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided number unwanted_json_node";
+  } else {
+    (*result) = result_node->number_value;
+  }
+
+  return result;
+}
+
+bool* unwanted_json_get_boolean_by_key(unwanted_json_node* node, char* key) {
+  bool* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Boolean) {
+    unwanted_json_error_message = "Node with provided key is not an unwanted_json_node boolean";
+
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided boolean unwanted_json_node";
+  } else {
+    (*result) = result_node->boolean_value;
+  }
+
+  return result;
+}
+
+bool* unwanted_json_get_null_by_key(unwanted_json_node* node, char* key) {
+  bool* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided null unwanted_json_node";
+  } else {
+    (*result) = result_node->type != Node_Null ? false : true;
+  }
+
+  return result;
+}
+
+unwanted_json_node* unwanted_json_get_array_by_key(unwanted_json_node* node, char* key) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Array) {
+    unwanted_json_error_message = "Node with provided key is not an unwanted_json_node array";
+
+    return NULL;
+  }
+
+  return result_node;
+}
+
+unwanted_json_node* unwanted_json_get_object_by_key(unwanted_json_node* node, char* key) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Object) {
+    unwanted_json_error_message = "Node with provided key is not an unwanted_json_node object";
+
+    return NULL;
+  }
+
+  return result_node;
+}
+
+unwanted_json_node* unwanted_json_get_node_by_index(unwanted_json_node* node, size_t index) {
+  if (node == NULL || node->type != Node_Array) {
+    unwanted_json_error_message = "Provided unwanted_json_node is not an array";
+
+    return NULL;
+  }
+
+  if (index < 0 || index >= node->array_value_size) {
+    unwanted_json_error_message = "Node with provided index not in provided unwanted_json_node";
+
+    return NULL;
+  }
+
+  return &node->array_value[index];
+}
+
+char* unwanted_json_get_string_by_index(unwanted_json_node* node, size_t index) {
+  char* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_String) {
+    unwanted_json_error_message = "Node with provided index is not an unwanted_json_node string";
+
+    return NULL;
+  }
+
+  result = strdup(result_node->string_value);
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided string unwanted_json_node";
+  }
+
+  return result;
+}
+
+double* unwanted_json_get_number_by_index(unwanted_json_node* node, size_t index) {
+  double* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Number) {
+    unwanted_json_error_message = "Node with provided index is not an unwanted_json_node number";
+
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided number unwanted_json_node";
+  } else {
+    (*result) = result_node->number_value;
+  }
+
+  return result;
+}
+
+bool* unwanted_json_get_boolean_by_index(unwanted_json_node* node, size_t index) {
+  bool* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Boolean) {
+    unwanted_json_error_message = "Node with provided index is not an unwanted_json_node boolean";
+
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided boolean unwanted_json_node";
+  } else {
+    (*result) = result_node->boolean_value;
+  }
+
+  return result;
+}
+
+bool* unwanted_json_get_null_by_index(unwanted_json_node* node, size_t index) {
+  bool* result = NULL;
+
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  result = malloc(sizeof(*result));
+
+  if (result == NULL) {
+    unwanted_json_error_message = "Failed to extract value of provided null unwanted_json_node";
+  } else {
+    (*result) = result_node->type != Node_Null ? false : true;
+  }
+
+  return result;
+}
+
+unwanted_json_node* unwanted_json_get_array_by_index(unwanted_json_node* node, size_t index) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Array) {
+    unwanted_json_error_message = "Node with provided index is not an unwanted_json_node array";
+
+    return NULL;
+  }
+
+  return result_node;
+}
+
+unwanted_json_node* unwanted_json_get_object_by_index(unwanted_json_node* node, size_t index) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_get_node_by_index(node, index);
+
+  if (result_node == NULL) {
+    return NULL;
+  }
+
+  if (result_node->type != Node_Object) {
+    unwanted_json_error_message = "Node with provided index is not an unwanted_json_node object";
+
+    return NULL;
+  }
+
+  return result_node;
+}

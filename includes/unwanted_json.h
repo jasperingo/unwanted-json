@@ -52,4 +52,28 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string);
 
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file);
 
+char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key);
+
+double* unwanted_json_get_number_by_key(unwanted_json_node* node, char* key);
+
+bool* unwanted_json_get_boolean_by_key(unwanted_json_node* node, char* key);
+
+bool* unwanted_json_get_null_by_key(unwanted_json_node* node, char* key);
+
+unwanted_json_node* unwanted_json_get_array_by_key(unwanted_json_node* node, char* key);
+
+unwanted_json_node* unwanted_json_get_object_by_key(unwanted_json_node* node, char* key);
+
+char* unwanted_json_get_string_by_index(unwanted_json_node* node, size_t index);
+
+double* unwanted_json_get_number_by_index(unwanted_json_node* node, size_t index);
+
+bool* unwanted_json_get_boolean_by_index(unwanted_json_node* node, size_t index);
+
+bool* unwanted_json_get_null_by_index(unwanted_json_node* node, size_t index);
+
+unwanted_json_node* unwanted_json_get_array_by_index(unwanted_json_node* node, size_t index);
+
+unwanted_json_node* unwanted_json_get_object_by_index(unwanted_json_node* node, size_t index);
+
 #endif
