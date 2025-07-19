@@ -42,6 +42,8 @@ void unwanted_json_cleanup_tokens(unwanted_json_tokens* tokens);
 
 void unwanted_json_print_tokens(unwanted_json_tokens* tokens);
 
+void unwanted_json_print_nodes(unwanted_json_node* node);
+
 void unwanted_json_cleanup_nodes(unwanted_json_node* node);
 
 unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens);
