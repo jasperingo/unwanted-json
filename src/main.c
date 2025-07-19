@@ -8,12 +8,15 @@ int main(int argc, char** args) {
   char* address_state = NULL;
   char* first_pet = NULL;
   bool* car = NULL;
+  bool* married = NULL;
   double* age = NULL;
   unwanted_json_node* sub_node = NULL;
 
   unwanted_json_node* node = NULL;
 
   unwanted_json_tokens* tokens = unwanted_json_file_tokenize(file);
+
+  printf("\n\n\n");
 
   if (tokens != NULL) {
     unwanted_json_print_tokens(tokens);
@@ -42,7 +45,7 @@ int main(int argc, char** args) {
       age = unwanted_json_get_number_by_key(node, "age");
 
       if (age != NULL) {
-        printf("Age value is: %d\n", *age);
+        printf("Age value is: %d\n", ((int) (*age)));
 
         free(age);
 
@@ -93,14 +96,22 @@ int main(int argc, char** args) {
         printf("Error getting value of JSON key %s: %s\n", "pets", unwanted_json_error());
       }
 
+      married = unwanted_json_get_boolean_by_key(node, "married");
+
+      if (married != NULL) {
+        printf("Married value is: %s\n", (*married) == true ? "true" : "false");
+
+        free(married);
+
+        married = NULL;
+      } else {
+        printf("Error getting value of JSON key %s: %s\n", "married", unwanted_json_error());
+      }
+
       car = unwanted_json_get_null_by_key(node, "car");
 
       if (car != NULL) {
-        if ((*car) == true) {
-          printf("Car value is null\n");
-        } else {
-          printf("Car value is not null\n");
-        }
+        printf("Car value is: %s\n", (*car) == true ? "null" : "not null");
 
         free(car);
 

@@ -455,7 +455,7 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
 
   while (fgets(line, sizeof(line), file) != NULL) {
     
-    printf("File line: %s\n", line);
+    // printf("File line: %s\n", line);
 
     line_size = strlen(line);
 
@@ -475,7 +475,7 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   }
 
   printf("File content: %s\n", file_lines);
-  printf("File char count: %d\n\n\n", file_lines_size);
+  printf("File char count: %d", file_lines_size);
 
   
   tokens = unwanted_json_tokenize(file_lines);
