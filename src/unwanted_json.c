@@ -578,20 +578,17 @@ void unwanted_json_print_nodes(unwanted_json_node* node) {
 bool unwanted_json_parse_object(unwanted_json_node* node, unwanted_json_tokens* tokens, size_t* tokens_index, size_t node_level) {
   char* key = NULL;
 
-  printf("Weten 19\n");
   unwanted_json_token token = tokens->values[++(*tokens_index)];
 
   node->object_value_size = 0;
   node->object_value = malloc(sizeof(*node->object_value));
 
-  printf("Weten 20\n");
   if (node->object_value == NULL) {
     unwanted_json_error_message = "Failed to allocate memory for unwanted_json_node object_value";
 
     return false;
   }
 
-  printf("Weten 21\n");
   while (token.type != Token_BraceClose) {
     if (token.type == Token_String) {
       key = token.value;
@@ -727,8 +724,6 @@ bool unwanted_json_parse_value(unwanted_json_node* node, unwanted_json_tokens* t
 
       return false;
   }
-
-  printf("Weten 18\n");
 }
 
 unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens) {

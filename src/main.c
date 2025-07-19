@@ -18,12 +18,12 @@ int main(int argc, char** args) {
   
       unwanted_json_cleanup_nodes(node);
     } else {
-      printf("Error parsing JSON Tokens to Nodes: %s", unwanted_json_error());
+      printf("Error parsing JSON Tokens to Nodes: %s\n", unwanted_json_error());
     }
 
     unwanted_json_cleanup_tokens(tokens);
   } else {
-    printf("Error parsing JSON file: %s", unwanted_json_error());
+    printf("Error parsing JSON file: %s\n", unwanted_json_error());
   }
 
   fclose(file);
