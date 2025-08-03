@@ -39,13 +39,16 @@ typedef struct unwanted_json_tokens unwanted_json_tokens;
 
 char* unwanted_json_error();
 
-void unwanted_json_cleanup_tokens(unwanted_json_tokens* tokens);
-
-void unwanted_json_print_tokens(unwanted_json_tokens* tokens);
 
 void unwanted_json_print_nodes(unwanted_json_node* node);
 
+void unwanted_json_print_tokens(unwanted_json_tokens* tokens);
+
+
 void unwanted_json_cleanup_nodes(unwanted_json_node* node);
+
+void unwanted_json_cleanup_tokens(unwanted_json_tokens* tokens);
+
 
 unwanted_json_tokens* unwanted_json_unparse(unwanted_json_node* node);
 
@@ -58,6 +61,16 @@ bool unwanted_json_file_untokenize(unwanted_json_tokens* tokens, FILE* file);
 unwanted_json_tokens* unwanted_json_tokenize(char* json_string);
 
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file);
+
+
+unwanted_json_node* unwanted_json_from_string(char* json_string);
+
+unwanted_json_node* unwanted_json_from_file(FILE* file);
+
+char* unwanted_json_to_string(unwanted_json_node* node);
+
+bool unwanted_json_to_file(unwanted_json_node* node, FILE* file);
+
 
 char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key);
 

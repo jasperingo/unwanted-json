@@ -683,7 +683,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
     case Node_Boolean:
       tokens->values[tokens->size].type = node->boolean_value ? Token_True : Token_False;
 
-      tokens->values[tokens->size].value = node->boolean_value ? "true" : "false";
+      tokens->values[tokens->size].value = strdup(node->boolean_value ? "true" : "false");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
 
       tokens->size++;
 
@@ -692,7 +698,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
     case Node_Null:
       tokens->values[tokens->size].type = Token_Null;
 
-      tokens->values[tokens->size].value = "null";
+      tokens->values[tokens->size].value = strdup("null");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
       
       tokens->size++;
 
@@ -722,7 +734,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
     case Node_Object:
       tokens->values[tokens->size].type = Token_BraceOpen;
 
-      tokens->values[tokens->size].value = "{";
+      tokens->values[tokens->size].value = strdup("{");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
       
       tokens->size++;
 
@@ -751,7 +769,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
         
         tokens->values[tokens->size].type = Token_Colon;
         
-        tokens->values[tokens->size].value = ":";
+        tokens->values[tokens->size].value = strdup(":");
+
+        if (tokens->values[tokens->size].value == NULL) {
+          unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+          return false;
+        }
 
         tokens->size++;
 
@@ -772,7 +796,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
 
           tokens->values[tokens->size].type = Token_Comma;
 
-          tokens->values[tokens->size].value = ",";
+          tokens->values[tokens->size].value = strdup(",");
+
+          if (tokens->values[tokens->size].value == NULL) {
+            unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+            return false;
+          }
           
           tokens->size++;
         }
@@ -788,7 +818,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
 
       tokens->values[tokens->size].type = Token_BraceClose;
 
-      tokens->values[tokens->size].value = "}";
+      tokens->values[tokens->size].value = strdup("}");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
       
       tokens->size++;
 
@@ -797,7 +833,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
     case Node_Array:
       tokens->values[tokens->size].type = Token_BracketOpen;
 
-      tokens->values[tokens->size].value = "[";
+      tokens->values[tokens->size].value = strdup("[");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
       
       tokens->size++;
 
@@ -828,7 +870,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
 
           tokens->values[tokens->size].type = Token_Comma;
 
-          tokens->values[tokens->size].value = ",";
+          tokens->values[tokens->size].value = strdup(",");
+
+          if (tokens->values[tokens->size].value == NULL) {
+            unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+            return false;
+          }
           
           tokens->size++;
         }
@@ -844,7 +892,13 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
 
       tokens->values[tokens->size].type = Token_BracketClose;
 
-      tokens->values[tokens->size].value = "]";
+      tokens->values[tokens->size].value = strdup("]");
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
       
       tokens->size++;
 
@@ -1069,6 +1123,80 @@ unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens) {
 
   return node;
 }
+
+
+unwanted_json_node* unwanted_json_from_string(char* json_string) {
+  unwanted_json_node* node = NULL;
+  
+  unwanted_json_tokens* tokens = NULL;
+
+  tokens = unwanted_json_tokenize(json_string);
+
+  if (tokens == NULL) {
+    return NULL;
+  }
+
+  node = unwanted_json_parse(tokens);
+
+  unwanted_json_cleanup_tokens(tokens);
+
+  return node;
+}
+
+unwanted_json_node* unwanted_json_from_file(FILE* file) {
+  unwanted_json_node* node = NULL;
+
+  unwanted_json_tokens* tokens = NULL;
+
+  tokens = unwanted_json_file_tokenize(file);
+
+  if (tokens == NULL) {
+    return NULL;
+  }
+
+  node = unwanted_json_parse(tokens);
+
+  unwanted_json_cleanup_tokens(tokens);
+
+  return node;
+}
+
+char* unwanted_json_to_string(unwanted_json_node* node) {
+  char* json_string = NULL;
+
+  unwanted_json_tokens* tokens = NULL;
+
+  tokens = unwanted_json_unparse(node);
+
+  if (tokens == NULL) {
+    return NULL;
+  }
+
+  json_string = unwanted_json_untokenize(tokens);
+  
+  unwanted_json_cleanup_tokens(tokens);
+
+  return json_string;
+}
+
+bool unwanted_json_to_file(unwanted_json_node* node, FILE* file) {
+  bool result;
+
+  unwanted_json_tokens* tokens = NULL;
+
+  tokens = unwanted_json_unparse(node);
+
+  if (tokens == NULL) {
+    return NULL;
+  }
+
+  result = unwanted_json_file_untokenize(tokens, file);
+  
+  unwanted_json_cleanup_tokens(tokens);
+
+  return result;
+}
+
 
 unwanted_json_node* unwanted_json_get_node_by_key(unwanted_json_node* node, char* key) {
   size_t i;
