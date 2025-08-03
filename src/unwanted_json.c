@@ -701,7 +701,7 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
     case Node_Number:
       tokens->values[tokens->size].type = Token_Number;
 
-      tokens->values[tokens->size].value = malloc(sizeof(node->number_value) * CHAR_BIT * 30103 / 100000 + 2);
+      tokens->values[tokens->size].value = malloc(512); // random buffer size to serve for now
 
       if (tokens->values[tokens->size].value == NULL) {
         unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
@@ -709,7 +709,11 @@ bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens*
         return false;
       }
 
-      sprintf(tokens->values[tokens->size].value, "%f", node->number_value);
+      if (fmod(node->number_value, 1) != 0) {
+        sprintf(tokens->values[tokens->size].value, "%f", node->number_value);
+      } else {
+        sprintf(tokens->values[tokens->size].value, "%d", (int) node->number_value);
+      }
 
       tokens->size++;
       

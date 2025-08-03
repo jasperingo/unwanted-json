@@ -1,1 +1,15 @@
-{"name":"John Doe","age":29.000000,"pets":["Dog","Cat"],"weight":79.250000,"married":false,"car":null,"address":{"state":"Rivers","country":"Nigeria"}}
+{
+  "name": "John Doe",
+  "age": 29,
+  "pets": [
+    "Dog",
+    "Cat"
+  ],
+  "weight": 79.250000,
+  "married": false,
+  "car": null,
+  "address": {
+    "state": "Rivers",
+    "country": "Nigeria"
+  }
+}
