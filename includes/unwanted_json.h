@@ -72,6 +72,22 @@ char* unwanted_json_to_string(unwanted_json_node* node);
 bool unwanted_json_to_file(unwanted_json_node* node, FILE* file);
 
 
+unwanted_json_node* unwanted_json_create_array();
+
+unwanted_json_node* unwanted_json_create_object();
+
+bool unwanted_json_set_string_by_key(unwanted_json_node* node, char* key, char* value);
+
+bool unwanted_json_set_number_by_key(unwanted_json_node* node, char* key, double value);
+
+bool unwanted_json_set_boolean_by_key(unwanted_json_node* node, char* key, bool value);
+
+bool unwanted_json_set_null_by_key(unwanted_json_node* node, char* key);
+
+bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value);
+
+bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value);
+
 char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key);
 
 double* unwanted_json_get_number_by_key(unwanted_json_node* node, char* key);

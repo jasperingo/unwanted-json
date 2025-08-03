@@ -512,7 +512,6 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
   return tokens;
 }
 
-
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   char line[128];
 
@@ -602,6 +601,8 @@ void unwanted_json_cleanup_node(unwanted_json_node* node) {
     }
   }
 }
+
+
 
 void unwanted_json_cleanup_nodes(unwanted_json_node* node) {
   if (node != NULL && node->level == 0) {
@@ -974,7 +975,7 @@ bool unwanted_json_parse_object(unwanted_json_node* node, unwanted_json_tokens* 
       token = tokens->values[++(*tokens_index)];
 
       if (node->object_value_size > 0) {
-        node->object_value = realloc(node->object_value, (node->object_value_size + 2) * sizeof(*node->object_value));
+        node->object_value = realloc(node->object_value, (node->object_value_size + 1) * sizeof(*node->object_value));
 
         if (node->object_value == NULL) {
           unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_node object_value";
@@ -1026,7 +1027,7 @@ bool unwanted_json_parse_array(unwanted_json_node* node, unwanted_json_tokens* t
 
   while (token.type != Token_BracketClose) {
     if (node->array_value_size > 0) {
-      node->array_value = realloc(node->array_value, (node->array_value_size + 2) * sizeof(*node->array_value));
+      node->array_value = realloc(node->array_value, (node->array_value_size + 1) * sizeof(*node->array_value));
 
       if (node->array_value == NULL) {
         unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_node array_value";
@@ -1125,6 +1126,7 @@ unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens) {
 }
 
 
+
 unwanted_json_node* unwanted_json_from_string(char* json_string) {
   unwanted_json_node* node = NULL;
   
@@ -1195,6 +1197,181 @@ bool unwanted_json_to_file(unwanted_json_node* node, FILE* file) {
   unwanted_json_cleanup_tokens(tokens);
 
   return result;
+}
+
+
+
+unwanted_json_node* unwanted_json_create_array() {
+  unwanted_json_node* node = NULL;
+
+  node = malloc(sizeof(*node));
+
+  if (node == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_node";
+
+    return NULL;
+  }
+
+  node->level = 0;
+  node->type = Node_Array;
+  node->array_value_size = 0;
+  node->array_value = malloc(sizeof(*node->array_value));
+
+  if (node->array_value == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_node values";
+
+    free(node);
+
+    return NULL;
+  }
+
+  return node;
+}
+
+unwanted_json_node* unwanted_json_create_object() {
+  unwanted_json_node* node = NULL;
+
+  node = malloc(sizeof(*node));
+
+  if (node == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_node";
+
+    return NULL;
+  }
+
+  node->level = 0;
+  node->type = Node_Object;
+  node->object_value_size = 0;
+  node->object_value = malloc(sizeof(*node->object_value));
+
+  if (node->object_value == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_node values";
+
+    free(node);
+
+    return NULL;
+  }
+
+  return node;
+}
+
+unwanted_json_node* unwanted_json_set_node_by_key(unwanted_json_node* node, char* key) {
+  size_t i;
+
+  if (node == NULL || node->type != Node_Object) {
+    unwanted_json_error_message = "Provided unwanted_json_node is not an object";
+
+    return NULL;
+  }
+
+  for (i = 0; i < node->object_value_size; i++) {
+    if (strcmp(node->object_value[i].object_value_key, key) == 0) {
+      if (
+        node->object_value[i].type == Node_Array || 
+        node->object_value[i].type == Node_Object || 
+        node->object_value[i].type == Node_String
+      ) {
+        unwanted_json_cleanup_node(&node->object_value[i]);
+      }
+
+      return &node->object_value[i];
+    }
+  }
+
+  node->object_value = realloc(node->object_value, (node->object_value_size + 1) * sizeof(*node->object_value));
+
+  if (node->object_value == NULL) {
+    unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_node object_value";
+
+    return NULL;
+  }
+
+  node->object_value[node->object_value_size].object_value_key = strdup(key);
+
+  if (node->object_value[node->object_value_size].object_value_key == NULL) {
+    unwanted_json_error_message = "Failed to set unwanted_json_node object_value_key";
+
+    return NULL;
+  }
+
+  node->object_value[node->object_value_size].level = node->level + 1;
+
+  node->object_value_size++;
+
+  return &node->object_value[node->object_value_size - 1];
+}
+
+bool unwanted_json_set_string_by_key(unwanted_json_node* node, char* key, char* value) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_set_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  result_node->type = Node_String;
+  result_node->string_value = strdup(value);
+
+  if (result_node->string_value == NULL) {
+    unwanted_json_error_message = "Failed to set value of provided string on unwanted_json_node";
+
+    return false;
+  }
+
+  return true;
+}
+
+bool unwanted_json_set_number_by_key(unwanted_json_node* node, char* key, double value) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_set_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  result_node->type = Node_Number;
+  result_node->number_value = value;
+
+  return true;
+}
+
+bool unwanted_json_set_boolean_by_key(unwanted_json_node* node, char* key, bool value) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_set_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  result_node->type = Node_Boolean;
+  result_node->boolean_value = value;
+
+  return true;
+}
+
+bool unwanted_json_set_null_by_key(unwanted_json_node* node, char* key) {
+  unwanted_json_node* result_node = NULL;
+
+  result_node = unwanted_json_set_node_by_key(node, key);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  result_node->type = Node_Null;
+
+  return true;
+}
+
+bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value) {
+  return false;
+}
+
+bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value) {
+  return false;
 }
 
 
