@@ -111,6 +111,28 @@ char* unwanted_json_untokenize(unwanted_json_tokens* tokens) {
   return json_string;
 }
 
+bool unwanted_json_file_untokenize(unwanted_json_tokens* tokens, FILE* file) {
+  char* json_string = NULL;
+
+  json_string = unwanted_json_untokenize(tokens);
+
+  if (json_string == NULL) {
+    return false;
+  }
+
+  if (fputs(json_string, file) == EOF) {
+    unwanted_json_error_message = "Failed to write JSON string to File";
+
+    free(json_string);
+
+    return false;
+  }
+
+  free(json_string);
+
+  return true;
+}
+
 unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
   size_t json_string_size = 0;
 

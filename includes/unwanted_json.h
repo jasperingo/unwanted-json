@@ -53,6 +53,8 @@ unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens);
 
 char* unwanted_json_untokenize(unwanted_json_tokens* tokens);
 
+bool unwanted_json_file_untokenize(unwanted_json_tokens* tokens, FILE* file);
+
 unwanted_json_tokens* unwanted_json_tokenize(char* json_string);
 
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file);

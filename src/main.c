@@ -2,7 +2,8 @@
 #include "unwanted_json.h"
 
 int main(int argc, char** args) {
-  FILE* file = fopen("test.json", "r");
+  FILE* file;
+  FILE* out_file;
 
   char* json_string = NULL;
   char* name = NULL;
@@ -17,7 +18,18 @@ int main(int argc, char** args) {
 
   unwanted_json_tokens* reverse_tokens = NULL;
 
-  unwanted_json_tokens* tokens = unwanted_json_file_tokenize(file);
+  unwanted_json_tokens* tokens = NULL;
+
+
+  file = fopen("test.json", "r");
+
+  if (file == NULL) {
+    printf("Failed to open input JSON file");
+
+    return 1;
+  }
+
+  tokens = unwanted_json_file_tokenize(file);
 
   printf("\n\n\n");
 
@@ -139,13 +151,28 @@ int main(int argc, char** args) {
         printf("\n\n\n");
 
         if (json_string != NULL) {
-          printf("JSON string is: %s", json_string);
+          printf("JSON string is: %s\n", json_string);
 
           free(json_string);
 
           json_string = NULL;
         } else {
           printf("Error parsing JSON Tokens to String: %s\n", unwanted_json_error());
+        }
+        
+        
+        out_file = fopen("output.json", "w");
+        
+        if (out_file != NULL) {
+          if (unwanted_json_file_untokenize(reverse_tokens, out_file)) {
+            printf("JSON Tokens parsed to string and written to File\n");
+          } else {
+            printf("Error parsing JSON Tokens to File: %s\n", unwanted_json_error());
+          }
+
+          fclose(out_file);
+        } else {
+          printf("Failed to open JSON output file\n");
         }
 
         unwanted_json_cleanup_tokens(reverse_tokens);
