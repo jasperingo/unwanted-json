@@ -1255,7 +1255,7 @@ unwanted_json_node* unwanted_json_create_object() {
   return node;
 }
 
-unwanted_json_node* unwanted_json_set_node_by_key(unwanted_json_node* node, char* key) {
+unwanted_json_node* unwanted_json_set_node_by_key(unwanted_json_node* node, char* key, bool set_key) {
   size_t i;
 
   if (node == NULL || node->type != Node_Object) {
@@ -1286,12 +1286,14 @@ unwanted_json_node* unwanted_json_set_node_by_key(unwanted_json_node* node, char
     return NULL;
   }
 
-  node->object_value[node->object_value_size].object_value_key = strdup(key);
+  if (set_key) {
+    node->object_value[node->object_value_size].object_value_key = strdup(key);
 
-  if (node->object_value[node->object_value_size].object_value_key == NULL) {
-    unwanted_json_error_message = "Failed to set unwanted_json_node object_value_key";
+    if (node->object_value[node->object_value_size].object_value_key == NULL) {
+      unwanted_json_error_message = "Failed to set unwanted_json_node object_value_key";
 
-    return NULL;
+      return NULL;
+    }
   }
 
   node->object_value[node->object_value_size].level = node->level + 1;
@@ -1304,7 +1306,7 @@ unwanted_json_node* unwanted_json_set_node_by_key(unwanted_json_node* node, char
 bool unwanted_json_set_string_by_key(unwanted_json_node* node, char* key, char* value) {
   unwanted_json_node* result_node = NULL;
 
-  result_node = unwanted_json_set_node_by_key(node, key);
+  result_node = unwanted_json_set_node_by_key(node, key, true);
 
   if (result_node == NULL) {
     return false;
@@ -1325,7 +1327,7 @@ bool unwanted_json_set_string_by_key(unwanted_json_node* node, char* key, char* 
 bool unwanted_json_set_number_by_key(unwanted_json_node* node, char* key, double value) {
   unwanted_json_node* result_node = NULL;
 
-  result_node = unwanted_json_set_node_by_key(node, key);
+  result_node = unwanted_json_set_node_by_key(node, key, true);
 
   if (result_node == NULL) {
     return false;
@@ -1340,7 +1342,7 @@ bool unwanted_json_set_number_by_key(unwanted_json_node* node, char* key, double
 bool unwanted_json_set_boolean_by_key(unwanted_json_node* node, char* key, bool value) {
   unwanted_json_node* result_node = NULL;
 
-  result_node = unwanted_json_set_node_by_key(node, key);
+  result_node = unwanted_json_set_node_by_key(node, key, true);
 
   if (result_node == NULL) {
     return false;
@@ -1355,7 +1357,7 @@ bool unwanted_json_set_boolean_by_key(unwanted_json_node* node, char* key, bool 
 bool unwanted_json_set_null_by_key(unwanted_json_node* node, char* key) {
   unwanted_json_node* result_node = NULL;
 
-  result_node = unwanted_json_set_node_by_key(node, key);
+  result_node = unwanted_json_set_node_by_key(node, key, true);
 
   if (result_node == NULL) {
     return false;
@@ -1366,12 +1368,84 @@ bool unwanted_json_set_null_by_key(unwanted_json_node* node, char* key) {
   return true;
 }
 
+void unwanted_json_set_nodes_level(unwanted_json_node* node, size_t node_level) {
+  size_t i;
+
+  node->level = node_level;
+
+  switch (node->type) {
+    case Node_Object:
+      for (i = 0; i < node->object_value_size; i++) {
+        unwanted_json_set_nodes_level(&node->object_value[i], node_level + 1);
+      }
+    break;
+
+    case Node_Array:
+      for (i = 0; i < node->array_value_size; i++) {
+        unwanted_json_set_nodes_level(&node->array_value[i], node_level + 1);
+      }
+    break;
+  }
+}
+
 bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value) {
-  return false;
+  unwanted_json_node* result_node = NULL;
+
+  if (value->type != Node_Array) {
+    unwanted_json_error_message = "Provided unwanted_json_node as value is not an array";
+
+    return NULL;
+  }
+
+  result_node = unwanted_json_set_node_by_key(node, key, false);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  *result_node = *value;
+
+  result_node->object_value_key = strdup(key);
+
+  if (result_node->object_value_key == NULL) {
+    unwanted_json_error_message = "Failed to set unwanted_json_node object_value_key";
+
+    return false;
+  }
+
+  unwanted_json_set_nodes_level(result_node, node->level + 1);
+
+  return true;
 }
 
 bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value) {
-  return false;
+  unwanted_json_node* result_node = NULL;
+
+  if (value->type != Node_Object) {
+    unwanted_json_error_message = "Provided unwanted_json_node as value is not an object";
+
+    return NULL;
+  }
+
+  result_node = unwanted_json_set_node_by_key(node, key, false);
+
+  if (result_node == NULL) {
+    return false;
+  }
+
+  *result_node = *value;
+
+  result_node->object_value_key = strdup(key);
+
+  if (result_node->object_value_key == NULL) {
+    unwanted_json_error_message = "Failed to set unwanted_json_node object_value_key";
+
+    return false;
+  }
+
+  unwanted_json_set_nodes_level(result_node, node->level + 1);
+
+  return true;
 }
 
 
