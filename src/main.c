@@ -4,6 +4,7 @@
 int main(int argc, char** args) {
   FILE* file = fopen("test.json", "r");
 
+  char* json_string = NULL;
   char* name = NULL;
   char* address_state = NULL;
   char* first_pet = NULL;
@@ -13,6 +14,8 @@ int main(int argc, char** args) {
   unwanted_json_node* sub_node = NULL;
 
   unwanted_json_node* node = NULL;
+
+  unwanted_json_tokens* reverse_tokens = NULL;
 
   unwanted_json_tokens* tokens = unwanted_json_file_tokenize(file);
 
@@ -118,6 +121,36 @@ int main(int argc, char** args) {
         car = NULL;
       } else {
         printf("Error getting value of JSON key %s: %s\n", "car", unwanted_json_error());
+      }
+
+      
+      printf("\n\n\n REversing...\n");
+
+      reverse_tokens = unwanted_json_unparse(node);
+
+      printf("\n\n\n");
+
+      if (reverse_tokens != NULL) {
+        unwanted_json_print_tokens(reverse_tokens);
+
+        json_string = unwanted_json_untokenize(reverse_tokens);
+
+        
+        printf("\n\n\n");
+
+        if (json_string != NULL) {
+          printf("JSON string is: %s", json_string);
+
+          free(json_string);
+
+          json_string = NULL;
+        } else {
+          printf("Error parsing JSON Tokens to String: %s\n", unwanted_json_error());
+        }
+
+        unwanted_json_cleanup_tokens(reverse_tokens);
+      } else {
+        printf("Error parsing JSON Nodes to Tokens: %s\n", unwanted_json_error());
       }
   
       unwanted_json_cleanup_nodes(node);

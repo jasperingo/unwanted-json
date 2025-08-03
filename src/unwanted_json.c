@@ -1,7 +1,5 @@
 #include "unwanted_json.h"
 
-#define FILE_LINE_BUFFER 5
-
 struct unwanted_json_node {
   size_t level;
   unwanted_json_node_type type;
@@ -57,8 +55,63 @@ void unwanted_json_print_tokens(unwanted_json_tokens* tokens) {
   }
 }
 
-unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
+char* unwanted_json_untokenize(unwanted_json_tokens* tokens) {
+  size_t i = 0;
 
+  size_t token_size = 0;
+
+  size_t json_string_size = 0;
+
+  char* json_string = NULL;
+
+  if (tokens == NULL || tokens->size == 0) {
+    unwanted_json_error_message = "Provided unwanted_json_tokens is invalid";
+
+    return NULL;
+  }
+
+  json_string = malloc(sizeof(*json_string));
+
+  if (json_string == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for JSON string";
+
+    return NULL;
+  }
+
+  json_string[0] = '\0';
+
+  for (i = 0; i < tokens->size; i++) {
+    token_size = strlen(tokens->values[i].value);
+
+    json_string = realloc(json_string, (json_string_size + token_size + (tokens->values[i].type == Token_String ? 2 : 0) + 1) * sizeof(*json_string));
+
+    if (json_string == NULL) {
+      unwanted_json_error_message = "Failed to re-allocate memory for JSON string";
+
+      free(json_string);
+
+      return NULL;
+    }
+
+    if (tokens->values[i].type == Token_String) {
+      json_string[json_string_size] = '"';
+      json_string[json_string_size + 1] = '\0';
+    }
+    
+    strcat(json_string, tokens->values[i].value);
+
+    if (tokens->values[i].type == Token_String) {
+      json_string[json_string_size + token_size + 1] = '"';
+      json_string[json_string_size + token_size + 2] = '\0';
+    }
+
+    json_string_size = strlen(json_string);
+  }
+  
+  return json_string;
+}
+
+unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
   size_t json_string_size = 0;
 
   size_t json_string_index = 0;
@@ -103,7 +156,14 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
   while (json_string_index < json_string_size) {
     char json_char = json_string[json_string_index];
 
-    if (json_char == '{' || json_char == '}' || json_char == '[' || json_char == ']' || json_char == ':' || json_char == ',') {
+    if (
+      json_char == '{' || 
+      json_char == '}' || 
+      json_char == '[' || 
+      json_char == ']' || 
+      json_char == ':' || 
+      json_char == ','
+    ) {
       if (tokens->size > 0) {
         tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
 
@@ -432,7 +492,7 @@ unwanted_json_tokens* unwanted_json_tokenize(char* json_string) {
 
 
 unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
-  char line[FILE_LINE_BUFFER];
+  char line[128];
 
   size_t line_size = 0;
 
@@ -443,7 +503,7 @@ unwanted_json_tokens* unwanted_json_file_tokenize(FILE* file) {
   unwanted_json_tokens* tokens = NULL;
 
 
-  file_lines = malloc((FILE_LINE_BUFFER + 2) * sizeof(*file_lines));
+  file_lines = malloc((sizeof(line) + 2) * sizeof(*file_lines));
 
   if (file_lines == NULL) {
     unwanted_json_error_message = "Failed to allocate memory for file contents";
@@ -514,6 +574,10 @@ void unwanted_json_cleanup_node(unwanted_json_node* node) {
       default:
         break;
     }
+
+    if (node->level == 0) {
+      free(node);
+    }
   }
 }
 
@@ -573,6 +637,232 @@ void unwanted_json_print_nodes(unwanted_json_node* node) {
   } else {
     printf("unwanted_json Node not root Node\n");
   }
+}
+
+bool unwanted_json_unparse_value(unwanted_json_node* node, unwanted_json_tokens* tokens) {
+  size_t i;
+
+  switch (node->type) {
+    case Node_String:
+      tokens->values[tokens->size].type = Token_String;
+
+      tokens->values[tokens->size].value = strdup(node->string_value);
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
+
+      tokens->size++;
+
+      return true;
+    
+    case Node_Boolean:
+      tokens->values[tokens->size].type = node->boolean_value ? Token_True : Token_False;
+
+      tokens->values[tokens->size].value = node->boolean_value ? "true" : "false";
+
+      tokens->size++;
+
+      return true;
+
+    case Node_Null:
+      tokens->values[tokens->size].type = Token_Null;
+
+      tokens->values[tokens->size].value = "null";
+      
+      tokens->size++;
+
+      return true;
+
+    case Node_Number:
+      tokens->values[tokens->size].type = Token_Number;
+
+      tokens->values[tokens->size].value = malloc(sizeof(node->number_value) * CHAR_BIT * 30103 / 100000 + 2);
+
+      if (tokens->values[tokens->size].value == NULL) {
+        unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+        return false;
+      }
+
+      sprintf(tokens->values[tokens->size].value, "%f", node->number_value);
+
+      tokens->size++;
+      
+      return true;
+
+    case Node_Object:
+      tokens->values[tokens->size].type = Token_BraceOpen;
+
+      tokens->values[tokens->size].value = "{";
+      
+      tokens->size++;
+
+      for (i = 0; i < node->object_value_size; i++) {
+        tokens->values = realloc(tokens->values, (tokens->size + 3) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+          return false;
+        }
+
+
+        tokens->values[tokens->size].type = Token_String;
+
+        tokens->values[tokens->size].value = strdup(node->object_value[i].object_value_key);
+
+        if (tokens->values[tokens->size].value == NULL) {
+          unwanted_json_error_message = "Failed to set unwanted_json_tokens value";
+
+          return false;
+        }
+
+        tokens->size++;
+
+        
+        tokens->values[tokens->size].type = Token_Colon;
+        
+        tokens->values[tokens->size].value = ":";
+
+        tokens->size++;
+
+
+        if (unwanted_json_unparse_value(&node->object_value[i], tokens) == false) {
+          return false;
+        }
+
+
+        if (i < (node->object_value_size - 1)) {
+          tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+          if (tokens->values == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+            return false;
+          }
+
+          tokens->values[tokens->size].type = Token_Comma;
+
+          tokens->values[tokens->size].value = ",";
+          
+          tokens->size++;
+        }
+      }
+
+      tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+      if (tokens->values == NULL) {
+        unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+        return false;
+      }
+
+      tokens->values[tokens->size].type = Token_BraceClose;
+
+      tokens->values[tokens->size].value = "}";
+      
+      tokens->size++;
+
+      return true;
+
+    case Node_Array:
+      tokens->values[tokens->size].type = Token_BracketOpen;
+
+      tokens->values[tokens->size].value = "[";
+      
+      tokens->size++;
+
+
+      for (i = 0; i < node->array_value_size; i++) {
+        tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+        if (tokens->values == NULL) {
+          unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+          return false;
+        }
+
+
+        if (unwanted_json_unparse_value(&node->array_value[i], tokens) == false) {
+          return false;
+        }
+
+
+        if (i < (node->array_value_size - 1)) {
+          tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+          if (tokens->values == NULL) {
+            unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+            return false;
+          }
+
+          tokens->values[tokens->size].type = Token_Comma;
+
+          tokens->values[tokens->size].value = ",";
+          
+          tokens->size++;
+        }
+      }
+
+      tokens->values = realloc(tokens->values, (tokens->size + 1) * sizeof(*tokens->values));
+
+      if (tokens->values == NULL) {
+        unwanted_json_error_message = "Failed to re-allocate memory for unwanted_json_tokens values";
+
+        return false;
+      }
+
+      tokens->values[tokens->size].type = Token_BracketClose;
+
+      tokens->values[tokens->size].value = "]";
+      
+      tokens->size++;
+
+      return true;
+
+    default:
+      unwanted_json_error_message = "Invalid JSON node passed to unparser";
+
+      return false;
+  }
+}
+
+unwanted_json_tokens* unwanted_json_unparse(unwanted_json_node* node) {
+  size_t i;
+
+  unwanted_json_tokens* tokens = NULL;
+
+  tokens = malloc(sizeof(*tokens));
+
+  if (tokens == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens";
+
+    return NULL;
+  }
+
+  tokens->size = 0;
+
+  tokens->values = malloc(sizeof(*tokens->values));
+
+  if (tokens->values == NULL) {
+    unwanted_json_error_message = "Failed to allocate memory for unwanted_json_tokens values";
+
+    free(tokens);
+
+    return NULL;
+  }
+
+  if (unwanted_json_unparse_value(node, tokens) == false) {
+    unwanted_json_cleanup_tokens(tokens);
+
+    return NULL;
+  }
+
+  return tokens;
 }
 
 bool unwanted_json_parse_object(unwanted_json_node* node, unwanted_json_tokens* tokens, size_t* tokens_index, size_t node_level) {

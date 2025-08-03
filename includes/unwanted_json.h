@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <limits.h>
 
 typedef enum {
   Token_String,
@@ -46,7 +47,11 @@ void unwanted_json_print_nodes(unwanted_json_node* node);
 
 void unwanted_json_cleanup_nodes(unwanted_json_node* node);
 
+unwanted_json_tokens* unwanted_json_unparse(unwanted_json_node* node);
+
 unwanted_json_node* unwanted_json_parse(unwanted_json_tokens* tokens);
+
+char* unwanted_json_untokenize(unwanted_json_tokens* tokens);
 
 unwanted_json_tokens* unwanted_json_tokenize(char* json_string);
 
