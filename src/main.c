@@ -60,9 +60,11 @@ int main(int argc, char** args) {
       sub_node = unwanted_json_create_object();
       unwanted_json_set_string_by_key(sub_node, "first", "Yes");
       unwanted_json_set_string_by_key(sub_node, "second", "No");
-
-      unwanted_json_set_object_by_key(node, "positions", sub_node);
-  
+      
+      unwanted_json_set_object_by_key(node, "positions", &sub_node);
+      
+      
+      unwanted_json_set_string_by_key(sub_node, "third", "Nein");
 
       unwanted_json_print_nodes(node);
 
@@ -74,7 +76,7 @@ int main(int argc, char** args) {
         json_string = unwanted_json_to_string(node);
 
         if (json_string != NULL) {
-          printf("JSON string is: %s\n", json_string);
+          printf("\n\nJSON string is: %s\n", json_string);
 
           free(json_string);
 
@@ -84,7 +86,7 @@ int main(int argc, char** args) {
         }
         
         
-        unwanted_json_cleanup_nodes(sub_node);
+        // unwanted_json_cleanup_nodes(sub_node);
         
         // out_file = fopen("output.json", "w");
         

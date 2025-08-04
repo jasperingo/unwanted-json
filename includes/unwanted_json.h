@@ -84,9 +84,9 @@ bool unwanted_json_set_boolean_by_key(unwanted_json_node* node, char* key, bool 
 
 bool unwanted_json_set_null_by_key(unwanted_json_node* node, char* key);
 
-bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value);
+bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwanted_json_node** value);
 
-bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node* value);
+bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node** value);
 
 char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key);
 
