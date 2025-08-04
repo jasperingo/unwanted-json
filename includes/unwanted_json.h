@@ -88,6 +88,18 @@ bool unwanted_json_set_array_by_key(unwanted_json_node* node, char* key, unwante
 
 bool unwanted_json_set_object_by_key(unwanted_json_node* node, char* key, unwanted_json_node** value);
 
+bool unwanted_json_set_string_by_index(unwanted_json_node* node, size_t index, char* value);
+
+bool unwanted_json_set_number_by_index(unwanted_json_node* node, size_t index, double value);
+
+bool unwanted_json_set_boolean_by_index(unwanted_json_node* node, size_t index, bool value);
+
+bool unwanted_json_set_null_by_index(unwanted_json_node* node, size_t index);
+
+bool unwanted_json_set_array_by_index(unwanted_json_node* node, size_t index, unwanted_json_node** value);
+
+bool unwanted_json_set_object_by_index(unwanted_json_node* node, size_t index, unwanted_json_node** value);
+
 char* unwanted_json_get_string_by_key(unwanted_json_node* node, char* key);
 
 double* unwanted_json_get_number_by_key(unwanted_json_node* node, char* key);

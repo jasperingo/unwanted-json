@@ -65,6 +65,17 @@ int main(int argc, char** args) {
       
       
       unwanted_json_set_string_by_key(sub_node, "third", "Nein");
+      unwanted_json_set_boolean_by_key(sub_node, "fourth", false);
+
+      sub_node = unwanted_json_create_array();
+      unwanted_json_set_string_by_index(sub_node, 0, "Yam");
+      unwanted_json_set_string_by_index(sub_node, 1, "Rice");
+      
+      unwanted_json_set_array_by_key(node, "foods", &sub_node);
+      
+      
+      unwanted_json_set_string_by_index(sub_node, 2, "Beans");
+      unwanted_json_set_number_by_index(sub_node, 3, 100);
 
       unwanted_json_print_nodes(node);
 
