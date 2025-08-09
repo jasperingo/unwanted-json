@@ -7,46 +7,48 @@
 #include <ctype.h>
 #include <math.h>
 
-typedef enum {
-  Token_String,
-  Token_Number,
-  Token_True,
-  Token_False,
-  Token_Null,
-  Token_Comma,
-  Token_Colon,
-  Token_BraceOpen,
-  Token_BraceClose,
-  Token_BracketOpen,
-  Token_BracketClose,
-} unwanted_json_token_type;
-
-typedef enum {
-  Node_String,
-  Node_Number,
-  Node_Boolean,
-  Node_Null,
-  Node_Object,
-  Node_Array,
-} unwanted_json_node_type;
-
+/**
+ * A JSON node struct
+ * JSON is made up of nodes from the root node down to the leaf nodes
+ */
 typedef struct unwanted_json_node unwanted_json_node;
 
-typedef struct unwanted_json_token unwanted_json_token;
-
+/**
+ * Tokens used from serializing or deserializing nodes
+ * These tokens can be extracted from a JSON string and be parsed into nodes
+ * These tokens can be created from nodes to be converted to a JSON string
+ */
 typedef struct unwanted_json_tokens unwanted_json_tokens;
 
-
+/**
+ * Get the last error message
+ * @return error message
+ */
 char* unwanted_json_error();
 
-
+/**
+ * Prints a JSON node and its child nodes to the console
+ * @param node the node to be printed
+ */
 void unwanted_json_print_nodes(unwanted_json_node* node);
 
+/**
+ * Prints the extracted JSON tokens to the console
+ * @param tokens the tokens to be printed
+ */
 void unwanted_json_print_tokens(unwanted_json_tokens* tokens);
 
-
+/**
+ * Frees a JSON node and its child nodes
+ * If you have a pointer to one of the child nodes of this node, set it to NULL as it is now invalid
+ * @param node the node to be cleaned up
+ */
 void unwanted_json_cleanup_nodes(unwanted_json_node* node);
 
+/**
+ * Frees all JSON tokens
+ * @param tokens the tokens to be cleaned up
+ */
 void unwanted_json_cleanup_tokens(unwanted_json_tokens* tokens);
 
 

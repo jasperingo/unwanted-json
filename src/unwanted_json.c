@@ -1,5 +1,28 @@
 #include "unwanted_json.h"
 
+typedef enum {
+  Token_String,
+  Token_Number,
+  Token_True,
+  Token_False,
+  Token_Null,
+  Token_Comma,
+  Token_Colon,
+  Token_BraceOpen,
+  Token_BraceClose,
+  Token_BracketOpen,
+  Token_BracketClose,
+} unwanted_json_token_type;
+
+typedef enum {
+  Node_String,
+  Node_Number,
+  Node_Boolean,
+  Node_Null,
+  Node_Object,
+  Node_Array,
+} unwanted_json_node_type;
+
 struct unwanted_json_node {
   size_t level;
   unwanted_json_node_type type;
@@ -13,10 +36,10 @@ struct unwanted_json_node {
   unwanted_json_node** object_value;
 };
 
-struct unwanted_json_token {
+typedef struct unwanted_json_token {
   unwanted_json_token_type type;
   char* value;
-};
+} unwanted_json_token;
 
 struct unwanted_json_tokens {
   size_t size;
